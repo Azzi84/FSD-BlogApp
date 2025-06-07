@@ -1,0 +1,32 @@
+{
+  "name": "assignment-cms",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean-data": "node scripts/clean-tmp-files.js",
+    "reset-data": "node scripts/clean-tmp-files.js && node scripts/init-data.js",
+    "sync-db": "node --experimental-specifier-resolution=node scripts/sync-db.js",
+    "init-db": "node scripts/init-db.js"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.4",
+    "typescript": "5.7.3"
+  },
+  "packageManager": "pnpm@10.2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "dotenv": "^16.4.5",
+    "pg": "^8.12.0",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "prisma": "^6.3.1"
+  }
+}

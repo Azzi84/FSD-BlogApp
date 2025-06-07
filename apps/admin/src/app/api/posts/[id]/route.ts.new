@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from "next/server";
+import { posts, Post } from "@repo/db/data";
+import { savePosts, loadPosts } from "@repo/db/persistence";
+import { isLoggedIn } from "../../../../utils/auth";
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const postId = parseInt(params.id);
+  
+  // Check authentication
+  const isAuthenticated = await isLoggedIn();
+  if (!isAuthenticated) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const postIndex = posts.findIndex((post) => post.id === postId);
+    
+    if (postIndex === -1) {
+      return NextResponse.json(
+        { error: "Post not found" },
+        { status: 404 }
+      );
+    }
+
+    const existingPost = posts[postIndex];
+    
+    // Handle the date correctly - ensure it's a Date object
+    const dateValue = body.date ? 
+      (body.date instanceof Date ? body.date : new Date(body.date)) : 
+      existingPost.date;
+    
+    // Update post in the posts array
+    const updatedPost: Post = {
+      ...existingPost,
+      ...body,
+      id: postId, // Ensure ID doesn't change
+      date: dateValue // Ensure date is correctly handled
+    };
+    
+    posts[postIndex] = updatedPost;
+    
+    console.log(`Updating post ID ${postId}`, updatedPost);
+    
+    // Persist changes to file
+    try {
+      await savePosts();
+      console.log(`Successfully saved updated post ID ${postId}`);
+    } catch (saveError) {
+      console.error(`Error saving updated post ID ${postId}:`, saveError);
+      throw saveError;
+    }
+    
+    return NextResponse.json({ 
+      message: "Post updated successfully", 
+      post: updatedPost 
+    });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return NextResponse.json(
+      { error: "Failed to update post" }, 
+      { status: 500 }
+    );
+  }
+}

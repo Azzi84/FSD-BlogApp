@@ -1,0 +1,138 @@
+import { PostEditForm } from "../../../components/PostEditForm";
+import { posts, Post, Comment } from "@repo/db/data";
+import { isLoggedIn } from "../../../utils/auth";
+import { redirect } from "next/navigation";
+import { client } from "@repo/db/client";
+import { savePosts, loadPosts } from "@repo/db/persistence";
+
+export default async function EditPost({ params }: { params: { urlId: string } }) {
+  const { urlId } = params;
+  
+  // Check authentication
+  const loggedIn = await isLoggedIn();
+  
+  // If not authenticated, show login form
+  if (!loggedIn) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Sign in to your account</h1>
+          </div>
+          <form className="mt-8 space-y-6" action="/api/auth" method="POST">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Sign in
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    );
+  }
+  
+  // Reload posts from file to ensure fresh data
+  try {
+    await loadPosts();
+    console.log("Reloaded posts from file for post detail page");
+  } catch (loadError) {
+    console.error("Error loading posts from file:", loadError);
+  }
+  
+  // Find the post in the in-memory posts array first
+  let post = posts.find((post) => post.urlId === urlId);
+  
+  // Try to get the post from the database to ensure we have the latest data
+  try {
+    // Use safeQuery to handle database table existence check
+    const dbPost = await client.safeQuery(async (prisma) => {
+      return await prisma.post.findFirst({
+        where: { urlId: urlId },
+        include: {
+          Comments: true,
+          Likes: true
+        }
+      });
+    });
+    
+    if (dbPost) {
+      console.log("Found post in database:", dbPost.id);
+      
+      // Convert database comments to Comment type
+      const comments: Comment[] = dbPost.Comments.map(comment => ({
+        id: comment.id,
+        postId: comment.postId,
+        parentId: comment.parentId !== null ? comment.parentId : undefined,
+        author: comment.author,
+        content: comment.content,
+        date: comment.date,
+        likes: comment.likes
+      }));
+      
+      // Create a Post object from the database data
+      const dbPostConverted: Post = {
+        id: dbPost.id,
+        title: dbPost.title,
+        content: dbPost.content || '',
+        description: dbPost.description || '',
+        imageUrl: dbPost.imageUrl || '',
+        category: dbPost.category || '',
+        tags: dbPost.tags || '',
+        urlId: dbPost.urlId,
+        active: dbPost.active,
+        date: dbPost.date,
+        views: dbPost.views,
+        likes: dbPost.likes,
+        comments: comments
+      };
+      
+      // Update the post variable with the latest database data
+      post = dbPostConverted;
+      
+      // Update the in-memory posts array
+      const existingIndex = posts.findIndex(p => p.id === dbPost.id);
+      if (existingIndex !== -1) {
+        posts[existingIndex] = dbPostConverted;
+      } else {
+        posts.push(dbPostConverted);
+      }
+      
+      // Save the updated posts array to file
+      try {
+        await savePosts();
+        console.log("Updated posts array with database data");
+      } catch (saveError) {
+        console.error("Error saving posts to file:", saveError);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching post from database:", error);
+    console.log("Using file-based post data instead");
+  }
+    // If post not found, redirect to admin home
+  if (!post) {
+    redirect('/');
+  }
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Edit Post</h1>
+      <PostEditForm post={post} />
+    </div>
+  );
+}

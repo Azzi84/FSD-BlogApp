@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@config "../../tailwind.config.ts";
+
+:root {
+  --background: white;
+  --foreground: #0a0a0a;
+  --text: theme("colors.gray.900");
+  --textHover: theme("colors.gray.700");
+  --text-secondary: theme("colors.gray.600");
+  --text-secondaryHover: theme("colors.gray.400");
+  --wsu: #a31631;
+  --wsu-light: #853846;
+}
+
+html[data-theme="dark"] {
+  --background: theme("colors.gray.900");
+  --foreground: #ededed;
+  --text: theme("colors.gray.50");
+  --textHover: theme("colors.gray.300");
+  --text-secondary: theme("colors.gray.400");
+  --text-secondaryHover: theme("colors.gray.500");
+}
+
+html {
+  background: var(--background);
+}
+
+@theme inline {
+  --color-primary: var(--text);
+  --color-primaryHover: var(--textHover);
+  --color-secondary: var(--text-secondary);
+  --color-secondaryHover: var(--text-secondaryHover);
+  --color-wsu: var(--wsu);
+  --color-wsu-light: var(--wsu-light);
+}
+
+/* Markdown content styling for dark mode */
+.markdown-content {
+  color: #111827; /* gray-900 */
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  color: #111827; /* gray-900 */
+  font-weight: bold;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content li,
+.markdown-content blockquote {
+  color: #111827; /* gray-900 */
+}
+
+.markdown-content strong {
+  color: #111827; /* gray-900 */
+  font-weight: bold;
+}
+
+.markdown-content em {
+  color: #111827; /* gray-900 */
+}
+
+.markdown-content code {
+  color: #111827; /* gray-900 */
+  background-color: #f3f4f6; /* gray-100 */
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.markdown-content pre {
+  background-color: #f3f4f6; /* gray-100 */
+  color: #111827; /* gray-900 */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+/* Dark mode styles */
+html[data-theme="dark"] .markdown-content {
+  color: #f3f4f6; /* gray-100 */
+}
+
+html[data-theme="dark"] .markdown-content h1,
+html[data-theme="dark"] .markdown-content h2,
+html[data-theme="dark"] .markdown-content h3,
+html[data-theme="dark"] .markdown-content h4,
+html[data-theme="dark"] .markdown-content h5,
+html[data-theme="dark"] .markdown-content h6 {
+  color: white;
+}
+
+html[data-theme="dark"] .markdown-content p,
+html[data-theme="dark"] .markdown-content ul,
+html[data-theme="dark"] .markdown-content ol,
+html[data-theme="dark"] .markdown-content li,
+html[data-theme="dark"] .markdown-content blockquote {
+  color: #f3f4f6; /* gray-100 */
+}
+
+html[data-theme="dark"] .markdown-content strong {
+  color: white;
+}
+
+html[data-theme="dark"] .markdown-content em {
+  color: #f3f4f6; /* gray-100 */
+}
+
+html[data-theme="dark"] .markdown-content code {
+  color: #f3f4f6; /* gray-100 */
+  background-color: #1f2937; /* gray-800 */
+}
+
+html[data-theme="dark"] .markdown-content pre {
+  background-color: #1f2937; /* gray-800 */
+  color: #f3f4f6; /* gray-100 */
+}
+
+/* Markdown content styling for dark mode */
+.markdown-content {
+  color: theme("colors.gray.900");
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  color: theme("colors.gray.900");
+  font-weight: bold;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content li,
+.markdown-content blockquote {
+  color: theme("colors.gray.900");
+}
+
+.markdown-content strong {
+  color: theme("colors.gray.900");
+  font-weight: bold;
+}
+
+.markdown-content em {
+  color: theme("colors.gray.900");
+}
+
+.markdown-content code {
+  color: theme("colors.gray.900");
+  background-color: theme("colors.gray.100");
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.markdown-content pre {
+  background-color: theme("colors.gray.100");
+  color: theme("colors.gray.900");
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+/* Dark mode styles */
+html[data-theme="dark"] .markdown-content {
+  color: theme("colors.gray.100");
+}
+
+html[data-theme="dark"] .markdown-content h1,
+html[data-theme="dark"] .markdown-content h2,
+html[data-theme="dark"] .markdown-content h3,
+html[data-theme="dark"] .markdown-content h4,
+html[data-theme="dark"] .markdown-content h5,
+html[data-theme="dark"] .markdown-content h6 {
+  color: white;
+}
+
+html[data-theme="dark"] .markdown-content p,
+html[data-theme="dark"] .markdown-content ul,
+html[data-theme="dark"] .markdown-content ol,
+html[data-theme="dark"] .markdown-content li,
+html[data-theme="dark"] .markdown-content blockquote {
+  color: theme("colors.gray.100");
+}
+
+html[data-theme="dark"] .markdown-content strong {
+  color: white;
+}
+
+html[data-theme="dark"] .markdown-content em {
+  color: theme("colors.gray.100");
+}
+
+html[data-theme="dark"] .markdown-content code {
+  color: theme("colors.gray.100");
+  background-color: theme("colors.gray.800");
+}
+
+html[data-theme="dark"] .markdown-content pre {
+  background-color: theme("colors.gray.800");
+  color: theme("colors.gray.100");
+}
