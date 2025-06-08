@@ -11,7 +11,7 @@ interface CommentsListProps {
 }
 
 export function CommentsList({ post }: CommentsListProps) {
-  const [comments, setComments] = useState<CommentType[]>(post.comments || []);
+  const [comments, setComments] = useState<CommentType[]>([]);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,44 +31,31 @@ export function CommentsList({ post }: CommentsListProps) {
         replies: comment.replies ? comment.replies.map(processCommentDates) : []
       };
     }
+  };  // Helper function to refresh comments from the API
+  const refreshComments = async () => {
+    try {
+      const response = await fetch(`/api/comments/${post.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+      
+      const data = await response.json();
+      
+      // Always update comments from API response
+      if (data.comments) {
+        const processedComments = data.comments.map(processCommentDates);
+        setComments(processedComments);
+      } else {
+        setComments([]);
+      }
+    } catch (err) {
+      console.error('Error refreshing comments:', err);
+    }
   };
-
   // Fetch comments when component mounts
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await fetch(`/api/comments/${post.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch comments');
-        }
-        
-        const data = await response.json();
-        
-        // Only update if we have comments from the API
-        if (data.comments && data.comments.length > 0) {
-          // Process comments with safe date conversion
-          const processedComments = data.comments.map(processCommentDates);
-          setComments(processedComments);
-        }
-      } catch (err) {
-        console.error('Error fetching comments:', err);
-      }
-    };
-    
-    // Initialize comments from props, ensuring dates are properly processed
-    if (post.comments && post.comments.length > 0) {
-      try {
-        const initialComments = post.comments.map(processCommentDates);
-        setComments(initialComments);
-      } catch (err) {
-        console.error('Error processing initial comments:', err);
-      }
-    } else {
-      // Only fetch if comments aren't already provided
-      fetchComments();
-    }
-  }, [post.id, post.comments]);
-  const handleAddComment = async (content: string, author: string) => {
+    refreshComments();
+  }, [post.id]);const handleAddComment = async (content: string, author: string) => {
     setIsLoading(true);
     setError(null);
     
@@ -85,36 +72,16 @@ export function CommentsList({ post }: CommentsListProps) {
         throw new Error('Failed to add comment');
       }
       
-      const data = await response.json();
-      
-      if (data.comment) {
-        try {
-          // Ensure the date is a Date object using our safe processor
-          const newComment = processCommentDates(data.comment);
-          setComments([...comments, newComment]);
-          setShowCommentForm(false);
-        } catch (err) {
-          console.error('Error processing new comment date:', err);
-          
-          // Fallback approach: use current date if conversion fails
-          const fallbackComment = {
-            ...data.comment,
-            date: new Date(),
-            replies: []
-          };
-          
-          setComments([...comments, fallbackComment]);
-          setShowCommentForm(false);
-        }
-      }
+      setShowCommentForm(false);
+      // Refresh comments from database to get the updated structure
+      await refreshComments();
     } catch (err) {
       console.error('Error adding comment:', err);
       setError('Failed to add comment. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-  const handleAddReply = async (reply: Omit<CommentType, 'id' | 'date' | 'likes'>) => {
+  };  const handleAddReply = async (reply: Omit<CommentType, 'id' | 'date' | 'likes'>) => {
     setIsLoading(true);
     setError(null);
     
@@ -135,38 +102,8 @@ export function CommentsList({ post }: CommentsListProps) {
         throw new Error('Failed to add reply');
       }
       
-      const data = await response.json();
-      
-      if (data.comment) {
-        try {
-          // Process reply with safe date conversion
-          const newReply = processCommentDates(data.comment);
-          
-          // Update the state with the new comment structure
-          const updatedComments = addReplyToComment(
-            comments, 
-            reply.parentId!, 
-            newReply
-          );
-          setComments(updatedComments);
-        } catch (err) {
-          console.error('Error processing new reply:', err);
-          
-          // Fallback approach with current date
-          const fallbackReply = {
-            ...data.comment,
-            date: new Date(),
-            replies: []
-          };
-          
-          const updatedComments = addReplyToComment(
-            comments, 
-            reply.parentId!, 
-            fallbackReply
-          );
-          setComments(updatedComments);
-        }
-      }
+      // Refresh comments from the API to get the complete updated structure
+      await refreshComments();
     } catch (err) {
       console.error('Error adding reply:', err);
       setError('Failed to add reply. Please try again.');
@@ -174,8 +111,7 @@ export function CommentsList({ post }: CommentsListProps) {
       setIsLoading(false);
     }
   };
-  
-  const handleDeleteComment = async (commentId: number) => {
+    const handleDeleteComment = async (commentId: number) => {
     setIsLoading(true);
     setError(null);
     
@@ -192,23 +128,8 @@ export function CommentsList({ post }: CommentsListProps) {
         throw new Error('Failed to delete comment');
       }
       
-      // Remove the comment from local state
-      const removeCommentFromState = (comments: CommentType[], targetId: number): CommentType[] => {
-        return comments.filter(comment => {
-          if (comment.id === targetId) {
-            return false; // Remove this comment
-          }
-          
-          // If this comment has replies, recursively filter them
-          if (comment.replies && comment.replies.length > 0) {
-            comment.replies = removeCommentFromState(comment.replies, targetId);
-          }
-          
-          return true; // Keep this comment
-        });
-      };
-      
-      setComments(prevComments => removeCommentFromState(prevComments, commentId));
+      // Refresh comments from the API to get the updated structure
+      await refreshComments();
     } catch (err) {
       console.error('Error deleting comment:', err);
       setError('Failed to delete comment. Please try again.');

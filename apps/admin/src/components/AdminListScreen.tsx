@@ -404,8 +404,10 @@ export function AdminListScreen() {
         {/* Header Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Admin Dashboard</h1>
-            <div className="flex gap-3">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Admin Dashboard</h1>            <div className="flex gap-3">
+              <a href="http://localhost:3001" target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm">
+                Go To Client
+              </a>
               <Link href="/posts/create" className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium shadow-sm">
                 Create Post
               </Link>

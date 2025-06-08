@@ -21,6 +21,10 @@ export async function PUT(
 
   try {
     const body = await request.json();
+    
+    // Load posts from database first (same as other routes)
+    await loadPosts();
+    
     const postIndex = posts.findIndex((post) => post.id === postId);
     
     if (postIndex === -1) {
@@ -134,6 +138,10 @@ export async function DELETE(
   }
 
   try {
+    // Load posts from database first (same as other routes)
+    await loadPosts();
+    
+    // Find the post in the loaded posts array
     const postIndex = posts.findIndex((post) => post.id === postId);
     
     if (postIndex === -1) {

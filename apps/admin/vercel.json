@@ -1,0 +1,16 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && corepack enable && pnpm install",
+  "buildCommand": "cd ../.. && cd packages/db && pnpm prisma generate && cd ../.. && pnpm turbo build --filter=@repo/admin",
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/**": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "SKIP_ENV_VALIDATION": "true",
+    "PRISMA_CLI_QUERY_ENGINE_TYPE": "binary",
+    "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-3.0.x"
+  }
+}

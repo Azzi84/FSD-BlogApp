@@ -5,6 +5,8 @@ import { posts, Post, Comment } from './data.js';
 // No file storage - everything uses the database
 
 // Function to save posts to the database
+// Note: Comments are managed separately via the Comment API and stored directly in the database
+// This function only handles post-specific data and does not interfere with comment relationships
 export async function savePosts(): Promise<void> {
   try {
     console.log(`Saving ${posts.length} posts to database`);
@@ -13,36 +15,48 @@ export async function savePosts(): Promise<void> {
       // Use transaction to ensure data consistency
       await prisma.$transaction(async (tx) => {
         for (const post of posts) {
-          await tx.post.upsert({
-            where: { id: post.id },
-            update: {
-              title: post.title,
-              content: post.content || '',
-              description: post.description || '',
-              imageUrl: post.imageUrl || '',
-              category: post.category || '',
-              tags: post.tags || '',
-              urlId: post.urlId,
-              active: post.active,
-              date: post.date,
-              views: post.views,
-              likes: post.likes
-            },
-            create: {
-              id: post.id,
-              title: post.title,
-              content: post.content || '',
-              description: post.description || '',
-              imageUrl: post.imageUrl || '',
-              category: post.category || '',
-              tags: post.tags || '',
-              urlId: post.urlId,
-              active: post.active,
-              date: post.date,
-              views: post.views,
-              likes: post.likes
-            }
+          // Check if post exists first
+          const existingPost = await tx.post.findUnique({
+            where: { id: post.id }
           });
+
+          if (existingPost) {
+            // Post exists - only update post fields, preserve comment relationships
+            await tx.post.update({
+              where: { id: post.id },
+              data: {
+                title: post.title,
+                content: post.content || '',
+                description: post.description || '',
+                imageUrl: post.imageUrl || '',
+                category: post.category || '',
+                tags: post.tags || '',
+                urlId: post.urlId,
+                active: post.active,
+                date: post.date,
+                views: post.views,
+                likes: post.likes
+              }
+            });
+          } else {
+            // Post doesn't exist - create new post
+            await tx.post.create({
+              data: {
+                id: post.id,
+                title: post.title,
+                content: post.content || '',
+                description: post.description || '',
+                imageUrl: post.imageUrl || '',
+                category: post.category || '',
+                tags: post.tags || '',
+                urlId: post.urlId,
+                active: post.active,
+                date: post.date,
+                views: post.views,
+                likes: post.likes
+              }
+            });
+          }
         }
       });
     });
